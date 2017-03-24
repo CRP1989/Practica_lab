@@ -8,20 +8,37 @@ class ServicioTest(TestCase):
     def setUp(self):
         User.objects.create(password="1234", username="prueba")
         usuario = User.objects.get(username = "prueba")
-        Transferencia.objects.create(user_cuenta = "usuario1", user_cuenta2 = "usuario2", monto = '25.00')
-        UserProfile.objects.create(correo="hola@gmail.com", nombre="hola", user = usuario)
+        User.objects.create(password="12345", username="prueba2")
+        usuario2 = User.objects.get(username = "prueba2")
+        Transferencia.objects.create(user_cuenta = "prueba", user_cuenta2 = "prueba2", monto = '25.00')
+        UserProfile.objects.create(correo="hola@gmail.com", nombre="hola", user = usuario, saldo = '10.00')
+        UserProfile.objects.create(correo="hola2@gmail.com", nombre="hola2", user = usuario2, saldo = '10.00')
         Servicio.objects.create(servicio="luz")
         Servicio.objects.create(servicio="cable")
         cable = Servicio.objects.get(servicio = "cable")
-        PagoServicio.objects.create(cuenta_servicio="cuenta", tipo_servicio = cable, user_cuenta = "prueba", monto='10.00')        
+        PagoServicio.objects.create(cuenta_servicio="cuenta", tipo_servicio = cable, user_cuenta = "hola", monto='10.00')        
         user_cuenta = UserProfile.objects.get(correo = "hola@gmail.com")
         Debito.objects.create(monto='10.00', descripcion="prueba", user_cuenta=user_cuenta)
         Credito.objects.create(monto='10.00', descripcion="prueba", user_cuenta=user_cuenta)
 
+    def test_login(self):
+        usuarios = User.objects.get(username="prueba")
+        self.assertIsNotNone(usuarios.username) 
+        self.assertEqual(usuarios.username, "prueba")
+        self.assertEqual(usuarios.password, "1234")
 
-    def test_servicio(self):
-        luz = Servicio.objects.get(servicio="luz")
-        self.assertEqual(luz.servicio, "luz")
+    def test_signup(self):
+        usuarios = User.objects.get(username="prueba")
+        usuario = User.objects.get(password="1234")
+        self.assertEquals(usuarios.username,"prueba") and self.assertNotEqual(usuario.password,"")
+
+    def test_pago_de_servicios(self):
+        pago = PagoServicio.objects.get(user_cuenta = "hola")
+        cable = Servicio.objects.get(servicio = "cable")
+        usuarios = UserProfile.objects.get(nombre = pago.user_cuenta)
+        self.assertNotEqual(pago.monto, '0.00')
+        self.assertEqual(pago.monto, usuarios.saldo)
+        self.assertIsNotNone(pago.user_cuenta)
 
     def test_credito(self):
         credit = Credito.objects.get(descripcion="prueba")
@@ -32,20 +49,3 @@ class ServicioTest(TestCase):
         debit = Debito.objects.get(descripcion="prueba")
         self.assertNotEqual(debit.monto, '0.00')
         self.assertIsNotNone(debit.user_cuenta)
-
-    def test_pago(self):
-        pago = PagoServicio.objects.get(user_cuenta = "prueba")
-        cable = Servicio.objects.get(servicio = "cable")
-        self.assertEquals(pago.tipo_servicio, cable)
-        self.assertNotEqual(pago.monto, '0.00')
-        self.assertIsNotNone(pago.user_cuenta)
-
-    def test_user(self):
-        usuarios = User.objects.get(username="prueba")
-        usuario = User.objects.get(password="1234")
-        self.assertEquals(usuarios.username,"prueba") and self.assertNotEqual(usuario.password,"")
-
-    def test_transfer(self):
-        transferencia = Transferencia.objects.get(user_cuenta="usuario1")
-        self.assertNotEqual(transferencia.user_cuenta, transferencia.user_cuenta2)
-        self.assertNotEqual(transferencia.monto, '0.00')
