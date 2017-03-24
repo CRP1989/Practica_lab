@@ -36,6 +36,7 @@ class ServicioTest(TestCase):
     def test_pago(self):
         pago = PagoServicio.objects.get(user_cuenta = "prueba")
         cable = Servicio.objects.get(servicio = "cable")
+        self.assertEquals(pago.tipo_servicio, cable)
         self.assertNotEqual(pago.monto, '0.00')
         self.assertIsNotNone(pago.user_cuenta)
 
